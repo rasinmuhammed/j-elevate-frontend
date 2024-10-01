@@ -1,0 +1,149 @@
+/* src/styles.css */
+
+/* Global Styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Login Page Styles */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 20px;
+  background: linear-gradient(to right, #350ca3,#6d259f, #f05e95);
+}
+
+.login-form {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 40px;
+  width: 400px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.login-form .logo {
+  width: 150px; /* Adjust the logo size as needed */
+  margin-bottom: 20px;
+}
+
+.login-form .tagline {
+  font-size: 16px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
+}
+
+.login-form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #1a2a6c;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+}
+
+.login-form button:hover {
+  background-color: #1a0000;
+}
+
+.login-form .error {
+  color: #ff4d4d;
+  margin-bottom: 10px;
+}
+
+.logo {
+  position: absolute; /* Absolute positioning for blending */
+  top: 25%; /* Adjust the position */
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Center alignment */
+  width: 150px; /* Adjust size as necessary */
+  opacity: 1; /* Slightly transparent */
+  mix-blend-mode: lighten; /* Blend mode */
+  z-index: 0; /* Logo behind the form */
+}
+
+.tagline {
+  margin-top: 20px; /* Space above the tagline */
+  font-size: 1.2rem; /* Font size for the tagline */
+  color: #ffffff; /* Color for the tagline */
+  text-align: center; /* Center align the tagline */
+}
+
+/* Admin Dashboard Styles */
+.admin-dashboard {
+  display: flex;
+  height: 100vh;
+  background-color: white; /* Main background color */
+}
+
+.admin-dashboard .sidebar {
+  width: 250px;
+  transition: width 0.3s;
+  background-color: #25195f; /* Sidebar background color */
+  padding: 20px;
+}
+
+.admin-dashboard .sidebar.collapsed {
+  width: 60px;
+}
+
+.admin-dashboard .sidebar .nav-link {
+  color: white; /* Nav link color */
+}
+
+.admin-dashboard .sidebar button {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.admin-dashboard .navbar {
+  background-color: #25195f; /* Navbar background color */
+}
+
+.admin-dashboard .navbar .navbar-brand {
+  color: white; /* Logo color in navbar */
+}
+
+.admin-dashboard .navbar .btn {
+  border-color: white; /* Logout button border color */
+}
+
+/* Manage Departments Styles */
+.manage-departments {
+  margin-top: 20px;
+}
+
+.manage-departments h4 {
+  margin-bottom: 20px;
+}
+
+.dashboard-logo {
+  position: absolute; 
+  top: 10px;
+  width:100px;
+  opacity: 1; 
+  mix-blend-mode: lighten; 
+  z-index: 0; 
+}
+
+/* Employee Progress Style*/
+.table-scroll {
+  max-height: 400px; /* Adjust height as needed */
+  overflow-y: auto; /* Enable vertical scrolling */
+  margin-bottom: 20px; /* Space below the table */
+}
+
+/* Add additional component-specific styles here... */
