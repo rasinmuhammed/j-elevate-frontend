@@ -1,7 +1,7 @@
-// src/components/CertificationApproval.js
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const CertificationApproval = () => {
   const [requests, setRequests] = useState([]);
@@ -9,16 +9,33 @@ const CertificationApproval = () => {
   useEffect(() => {
     // Fetch pending requests
     const fetchRequests = async () => {
-      const res = await axios.get('http://localhost:3000/api/admin/pending-requests');
-      setRequests(res.data);
+      try {
+        const res = await axios.get('http://localhost:3000/api/admin/pending-requests', {
+          headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+        });
+        setRequests(res.data);
+      } catch (error) {
+        console.error('Error fetching requests:', error);
+      }
     };
 
     fetchRequests();
   }, []);
 
   const handleApproval = async (requestId, approve) => {
-    await axios.post('http://localhost:3000/api/admin/approve-certification', { requestId, approve });
-    setRequests(requests.filter(req => req._id !== requestId)); // Remove approved/rejected request from UI
+    try {
+      await axios.post(
+        'http://localhost:3000/api/admin/approve-certification',
+        { requestId, approve },
+        { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
+      );
+      // Remove approved/rejected request from UI
+      setRequests((prevRequests) =>
+        prevRequests.filter(req => req._id !== requestId)
+      );
+    } catch (error) {
+      console.error('Error approving request:', error);
+    }
   };
 
   return (

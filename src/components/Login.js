@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import logowhite from '../images/logowhite.png'; // Correct the import statement
+import logowhite from '../images/logowhite.png'; 
 import { useNavigate } from 'react-router-dom';
-import '../components/style.css'; // Import the global CSS file
+import '../components/style.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -21,13 +21,21 @@ const Login = () => {
         password,
       });
 
+      // Set cookie with token
+      console.log(res.data.token);
       Cookies.set('token', res.data.token, {
         secure: true,
         sameSite: 'Strict',
         expires: 1,
       });
 
-      navigate('/dashboard');
+      // Navigate based on the role received from the server
+      if (res.data.role === 'employee') {
+        navigate('/employee-dashboard');
+        localStorage.setItem("id", res.data.id);
+      } else if (res.data.role === 'admin') {
+        navigate('/admin-dashboard');
+      }
     } catch (err) {
       if (err.response && err.response.status === 401) {
         setError('Invalid email or password. Please try again.');
@@ -42,30 +50,28 @@ const Login = () => {
     <div className="login-container">
       <img src={logowhite} alt="J Elevate Logo" className="logo" />
       <div className="login-container-2">
-      <p className="tagline">Cultivating Skills, Building Futures.</p>
-      <div className="login-form">
-        {error && <p className="error">{error}</p>}
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button type="submit">Login</button>
-        </form>
+        <p className="tagline">Cultivating Skills, Building Futures.</p>
+        <div className="login-form">
+          {error && <p className="error">{error}</p>}
+          <form onSubmit={handleSubmit}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button type="submit">Login</button>
+          </form>
+        </div>
       </div>
-      </div>
-    
-     
     </div>
   );
 };

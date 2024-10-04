@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Navbar, Nav, Button, Modal } from 'react-bootstrap';
+import { Container, Navbar, Nav, Button, Modal, Spinner } from 'react-bootstrap';
 import CertificationApproval from './CertificationApproval';
 import Leaderboard from './Leaderboard';
 import Cookies from 'js-cookie';
 import BulkUpload from './BulkUpload';
 import EmployeeProgress from './EmployeeProgress';
-import ManageDepartments from './ManageDepartments'; // Import ManageDepartments
+import ManageDepartments from './ManageDepartments';
 import AddEmployee from './AddEmployee';
-import logowhite from '../images/logowhite.png';
+import CourseManagement from './CourseManagement';
+import ManageSkills from './ManageSkills'; // Import ManageSkills component
+import logowhite from '../../images/logowhite.png';
 
 const AdminDashboard = () => {
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
-  const [activeComponent, setActiveComponent] = useState('certification'); // Default component
+  const [activeComponent, setActiveComponent] = useState('certification');
+  const [loading, setLoading] = useState(false);
 
   const handleLogout = () => {
     Cookies.remove('token');
@@ -27,6 +30,7 @@ const AdminDashboard = () => {
 
   const handleBulkUploadModalClose = () => {
     setShowBulkUploadModal(false);
+    setLoading(false); // Reset loading state
   };
 
   return (
@@ -50,6 +54,10 @@ const AdminDashboard = () => {
           <Nav.Link onClick={handleBulkUploadModalOpen} style={{ color: 'white' }}>
             {sidebarExpanded ? 'Bulk Upload Employees' : <i className="fa-solid fa-upload"></i>}
           </Nav.Link>
+          <Nav.Link onClick={() => setActiveComponent('certification')} style={{ color: 'white' }}>
+            {sidebarExpanded ? 'Certification Approval' : <i className="fa-solid fa-certificate"></i>}
+          </Nav.Link>
+
           <Nav.Link onClick={() => setActiveComponent('add-employee')} style={{ color: 'white' }}>
             {sidebarExpanded ? 'Add Employee' : <i className="fa-solid fa-user-plus"></i>}
           </Nav.Link>
@@ -58,6 +66,15 @@ const AdminDashboard = () => {
           </Nav.Link>
           <Nav.Link onClick={() => setActiveComponent('manage-departments')} style={{ color: 'white' }}>
             {sidebarExpanded ? 'Manage Departments' : <i className="fa-solid fa-sitemap"></i>}
+          </Nav.Link>
+          <Nav.Link onClick={() => setActiveComponent('course-management')} style={{ color: 'white' }}>
+            {sidebarExpanded ? 'Course Management' : <i className="fa-solid fa-book-open"></i>}
+          </Nav.Link>
+          <Nav.Link onClick={() => setActiveComponent('manage-skills')} style={{ color: 'white' }}>
+            {sidebarExpanded ? 'Manage Skills' : <i className="fa-solid fa-cogs"></i>}
+          </Nav.Link>
+          <Nav.Link onClick={() => setActiveComponent('leaderboard')} style={{ color: 'white' }}>
+            {sidebarExpanded ? 'Leaderboard' : <i className="fa-solid fa-trophy"></i>}
           </Nav.Link>
         </Nav>
       </div>
@@ -81,8 +98,10 @@ const AdminDashboard = () => {
           {activeComponent === 'add-employee' && <AddEmployee />}
           {activeComponent === 'employee-progress' && <EmployeeProgress />}
           {activeComponent === 'manage-departments' && <ManageDepartments />}
+          {activeComponent === 'manage-skills' && <ManageSkills />} {/* Render ManageSkills */}
           {activeComponent === 'certification' && <CertificationApproval />}
           {activeComponent === 'leaderboard' && <Leaderboard />}
+          {activeComponent === 'course-management' && <CourseManagement />}
         </Container>
 
         {/* Bulk Upload Modal */}
@@ -91,7 +110,7 @@ const AdminDashboard = () => {
             <Modal.Title>Bulk Upload Employees</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <BulkUpload />
+            {loading ? <Spinner animation="border" /> : <BulkUpload setLoading={setLoading} />}
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleBulkUploadModalClose}>

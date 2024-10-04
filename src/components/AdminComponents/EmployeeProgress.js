@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Modal, Form } from 'react-bootstrap';
 import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import './style.css'; // Import the CSS file for styles
+import GamificationProgress from './GamificationProgress'; // Import the Gamification Progress component
+import '../style.css'; // Import the CSS file for styles
 
 const EmployeeProgress = () => {
   const [employees, setEmployees] = useState([]);
@@ -10,15 +11,15 @@ const EmployeeProgress = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState(''); // Add state for selected department
-  const [departments, setDepartments] = useState([]); // Add state for departments
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [departments, setDepartments] = useState([]);
 
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/admin/employees'); // Change the endpoint
+        const response = await axios.get('http://localhost:3000/api/admin/employees');
         setEmployees(response.data);
-        setFilteredEmployees(response.data); // Initialize filteredEmployees with all employees
+        setFilteredEmployees(response.data);
       } catch (error) {
         console.error('Error fetching employees:', error);
       }
@@ -26,7 +27,7 @@ const EmployeeProgress = () => {
 
     const fetchDepartments = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/admin/departments'); // Change the endpoint
+        const response = await axios.get('http://localhost:3000/api/admin/departments');
         setDepartments(response.data);
       } catch (error) {
         console.error('Error fetching departments:', error);
@@ -38,7 +39,6 @@ const EmployeeProgress = () => {
   }, []);
 
   useEffect(() => {
-    // Filter employees whenever search term or selected department changes
     const filtered = employees.filter((employee) => {
       const isNameMatch = `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
       const isDepartmentMatch = selectedDepartment ? employee.department?.name === selectedDepartment : true;
@@ -54,6 +54,7 @@ const EmployeeProgress = () => {
       setShowModal(true);
     } catch (error) {
       console.error('Error fetching employee details:', error);
+      alert('Error fetching employee details'); // Display error to the user
     }
   };
 
@@ -101,7 +102,7 @@ const EmployeeProgress = () => {
           </thead>
           <tbody>
             {filteredEmployees.map((employee) => (
-              <tr key={employee._id} onMouseEnter={() => console.log(`Hovering over ${employee.firstName} ${employee.lastName}`)}>
+              <tr key={employee._id}>
                 <td>{employee.firstName} {employee.lastName}</td>
                 <td>{employee.department?.name}</td>
                 <td>{employee.designation}</td>
@@ -120,14 +121,22 @@ const EmployeeProgress = () => {
       {/* Modal for Employee Details */}
       <Modal show={showModal} onHide={closeModal} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>{selectedEmployee?.firstName} {selectedEmployee?.lastName} - Details</Modal.Title>
+          <Modal.Title>{selectedEmployee ? `${selectedEmployee.firstName} ${selectedEmployee.lastName} - Details` : 'Employee Details'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {selectedEmployee && (
+          {selectedEmployee ? (
             <div>
-              <h5>Department: {selectedEmployee.department?.name}</h5>
+              <h5>Employee ID: {selectedEmployee._id}</h5>
+              <h6>Email: {selectedEmployee.email}</h6>
+              <h6>Designation: {selectedEmployee.designation}</h6>
+              <h6>Role: {selectedEmployee.role}</h6>
+              <h6>Skills: {selectedEmployee.skills?.length ? selectedEmployee.skills.join(', ') : 'No skills available'}</h6>
+              <h6>Certifications: {selectedEmployee.certifications?.length ? selectedEmployee.certifications.join(', ') : 'No certifications available'}</h6>
+              <h6>Specializations: {selectedEmployee.specializations?.length ? selectedEmployee.specializations.join(', ') : 'No specializations available'}</h6>
               <h6>Points: {selectedEmployee.points}</h6>
-              {/* Add other relevant employee details */}
+
+              <GamificationProgress points={selectedEmployee.points} /> {/* Gamification Progress Component */}
+
               <h6>Progress History</h6>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={selectedEmployee.progressHistory}>
@@ -140,6 +149,8 @@ const EmployeeProgress = () => {
                 </LineChart>
               </ResponsiveContainer>
             </div>
+          ) : (
+            <h6>Loading employee details...</h6> // Loading state
           )}
         </Modal.Body>
         <Modal.Footer>
