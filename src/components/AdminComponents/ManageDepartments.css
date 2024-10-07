@@ -1,0 +1,44 @@
+/* ManageDepartments.css */
+.gradient-button {
+    background: linear-gradient(180deg, #350ca3, #6d259f, #f05e95);
+    border: none; /* Remove border if you want it to blend well */
+    color: white; /* Change text color for better contrast */
+  }
+  
+  .gradient-button:hover {
+    opacity: 0.8; /* Slightly reduce opacity on hover for effect */
+  }
+  
+  /* ManageDepartments.css */
+.container {
+    max-width: 1200px; /* Limit the width of the container */
+  }
+  
+  .course-list-container {
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent items from wrapping to the next line */
+    padding: 15px 0; /* Optional: add some vertical padding */
+  }
+  
+  .course-card {
+    display: inline-block; /* Allows cards to sit next to each other */
+    margin-right: 15px; /* Space between cards */
+  }
+  .course-card:hover {
+    transform: scale(1.02); /* Slightly enlarge on hover */
+  }
+  
+  .overflow-auto {
+    overflow-x: auto; /* Allow horizontal scrolling */
+  }
+  
+  .badge {
+    background-color: #007bff; /* Primary badge color */
+  }
+  
+  .btn-link {
+    color: #007bff; /* Link color */
+    text-decoration: none; /* Remove underline */
+  }
+
+  

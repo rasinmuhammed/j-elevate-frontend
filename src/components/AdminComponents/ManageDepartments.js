@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'; 
-import { Form, Button, Container, ListGroup, Col, Row, Modal } from 'react-bootstrap';
+import { Form, Button, Container, ListGroup, Col, Row, Modal, Card, Alert } from 'react-bootstrap';
 import axios from 'axios';
+import './ManageDepartments.css'; // Import the CSS file
 
 const ManageDepartments = () => {
   const [departments, setDepartments] = useState([]);
@@ -12,14 +13,18 @@ const ManageDepartments = () => {
   const [editRoleTitle, setEditRoleTitle] = useState('');
   const [editRoleLevel, setEditRoleLevel] = useState('');
   
-  // State for modal visibility
   const [showEditDeptModal, setShowEditDeptModal] = useState(false);
   const [showEditRoleModal, setShowEditRoleModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const fetchDepartments = async () => {
-      const res = await axios.get('http://localhost:3000/api/admin/departments');
-      setDepartments(res.data);
+      try {
+        const res = await axios.get('http://localhost:3000/api/admin/departments');
+        setDepartments(res.data);
+      } catch (error) {
+        setErrorMessage('Error fetching departments.');
+      }
     };
     fetchDepartments();
   }, []);
@@ -32,7 +37,7 @@ const ManageDepartments = () => {
       setDepartments([...departments, res.data]);
       setNewDept('');
     } catch (err) {
-      console.error('Error adding department', err);
+      setErrorMessage('Error adding department.');
     }
   };
 
@@ -45,7 +50,7 @@ const ManageDepartments = () => {
       setDepartments(departments.map(dept => dept._id === updatedDept._id ? updatedDept : dept));
       setNewRole('');
     } catch (err) {
-      console.error('Error adding role', err);
+      setErrorMessage('Error adding role.');
     }
   };
 
@@ -56,9 +61,9 @@ const ManageDepartments = () => {
       const res = await axios.put(`http://localhost:3000/api/admin/edit-department/${selectedDept._id}`, { name: editDeptName });
       setDepartments(departments.map(dept => dept._id === res.data._id ? res.data : dept));
       setEditDeptName('');
-      setShowEditDeptModal(false); // Close the modal after editing
+      setShowEditDeptModal(false);
     } catch (err) {
-      console.error('Error editing department', err);
+      setErrorMessage('Error editing department.');
     }
   };
 
@@ -73,22 +78,23 @@ const ManageDepartments = () => {
       setEditingRoleIndex(null);
       setEditRoleTitle('');
       setEditRoleLevel('');
-      setShowEditRoleModal(false); // Close the modal after editing
+      setShowEditRoleModal(false);
     } catch (err) {
-      console.error('Error editing role', err);
+      setErrorMessage('Error editing role.');
     }
   };
 
-  // Function to sort roles based on level
   const sortRoles = (roles) => {
     const roleOrder = { 'Senior': 3, 'Mid-Level': 2, 'Junior': 1 };
     return roles.sort((a, b) => (roleOrder[a.level] || 0) - (roleOrder[b.level] || 0));
   };
 
   return (
-    <Container>
-      <h4>Manage Departments and Roles</h4>
-      
+    <Container className="my-4">
+      <h4 className="text-center mb-4">Manage Departments and Roles</h4>
+
+      {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
+
       <Row className="my-3">
         <Col md={6}>
           <Form.Control 
@@ -99,7 +105,7 @@ const ManageDepartments = () => {
           />
         </Col>
         <Col md={2}>
-          <Button variant="primary" onClick={handleAddDepartment}>
+          <Button className="gradient-button" onClick={handleAddDepartment}>
             Add Department
           </Button>
         </Col>
@@ -121,46 +127,49 @@ const ManageDepartments = () => {
       </Form.Control>
 
       {selectedDept && (
-        <div className="mt-3">
-          <Button variant="primary" onClick={() => setShowEditDeptModal(true)}>
-            Edit {selectedDept.name}
-          </Button>
+        <Card className="mt-4 p-3">
+          <Card.Header as="h5">{selectedDept.name}</Card.Header>
+          <Card.Body>
+            <Button className="gradient-button mb-3" onClick={() => setShowEditDeptModal(true)}>
+              Edit {selectedDept.name}
+            </Button>
 
-          <h5 className="mt-4">Roles in {selectedDept.name}</h5>
-          <div style={{ maxHeight: '300px', overflowY: 'scroll' }}>
-            <ListGroup>
-              {sortRoles(selectedDept.roles).map((role, index) => (
-                <ListGroup.Item key={index} className="d-flex justify-content-between align-items-center">
-                  <span>{role.title} - {role.level}</span>
-                  <Button variant="link" onClick={() => {
-                    setEditingRoleIndex(index);
-                    setEditRoleTitle(role.title);
-                    setEditRoleLevel(role.level);
-                    setShowEditRoleModal(true); // Show edit role modal
-                  }}>
-                    <i class="fa-regular fa-pen-to-square"></i>
-                  </Button>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          </div>
+            <h5>Roles in {selectedDept.name}</h5>
+            <div style={{ maxHeight: '200px', overflowY: 'scroll' }}>
+              <ListGroup>
+                {sortRoles(selectedDept.roles).map((role, index) => (
+                  <ListGroup.Item key={index} className="d-flex justify-content-between align-items-center">
+                    <span>{role.title} - {role.level}</span>
+                    <Button variant="link" onClick={() => {
+                      setEditingRoleIndex(index);
+                      setEditRoleTitle(role.title);
+                      setEditRoleLevel(role.level);
+                      setShowEditRoleModal(true);
+                    }}>
+                      <i className="fa-regular fa-pen-to-square"></i>
+                    </Button>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            </div>
 
-          <Row className="mt-3">
-            <Col md={6}>
-              <Form.Control 
-                type="text" 
-                placeholder="New Role"
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value)} 
-              />
-            </Col>
-            <Col md={2}>
-              <Button variant="primary" onClick={handleAddRole}>
-                Add Role
-              </Button>
-            </Col>
-          </Row>
-        </div>
+            <Row className="mt-3">
+              <Col md={6}>
+                <Form.Control 
+                  type="text" 
+                  placeholder="New Role"
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)} 
+                />
+              </Col>
+              <Col md={2}>
+                <Button className="gradient-button" onClick={handleAddRole}>
+                  Add Role
+                </Button>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
       )}
 
       {/* Edit Department Modal */}
@@ -180,7 +189,7 @@ const ManageDepartments = () => {
           <Button variant="secondary" onClick={() => setShowEditDeptModal(false)}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleEditDepartment}>
+          <Button className="gradient-button" onClick={handleEditDepartment}>
             Save Changes
           </Button>
         </Modal.Footer>
@@ -215,7 +224,7 @@ const ManageDepartments = () => {
           <Button variant="secondary" onClick={() => setShowEditRoleModal(false)}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleEditRole}>
+          <Button className="gradient-button" onClick={handleEditRole}>
             Save Changes
           </Button>
         </Modal.Footer>

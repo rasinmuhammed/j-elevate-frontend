@@ -10,11 +10,12 @@ import AddEmployee from './AddEmployee';
 import CourseManagement from './CourseManagement';
 import ManageSkills from './ManageSkills'; // Import ManageSkills component
 import logowhite from '../../images/logowhite.png';
+import DashboardStatistics from './DashboardStatistics';
 
 const AdminDashboard = () => {
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
-  const [activeComponent, setActiveComponent] = useState('certification');
+  const [activeComponent, setActiveComponent] = useState('dashboard'); // Set default to 'dashboard'
   const [loading, setLoading] = useState(false);
 
   const handleLogout = () => {
@@ -57,7 +58,6 @@ const AdminDashboard = () => {
           <Nav.Link onClick={() => setActiveComponent('certification')} style={{ color: 'white' }}>
             {sidebarExpanded ? 'Certification Approval' : <i className="fa-solid fa-certificate"></i>}
           </Nav.Link>
-
           <Nav.Link onClick={() => setActiveComponent('add-employee')} style={{ color: 'white' }}>
             {sidebarExpanded ? 'Add Employee' : <i className="fa-solid fa-user-plus"></i>}
           </Nav.Link>
@@ -95,10 +95,11 @@ const AdminDashboard = () => {
 
         <Container className="dashboard-container mt-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', padding: '20px' }}>
           {/* Render Active Component */}
+          {activeComponent === 'dashboard' && <DashboardStatistics />} {/* Dashboard component set as default */}
           {activeComponent === 'add-employee' && <AddEmployee />}
           {activeComponent === 'employee-progress' && <EmployeeProgress />}
           {activeComponent === 'manage-departments' && <ManageDepartments />}
-          {activeComponent === 'manage-skills' && <ManageSkills />} {/* Render ManageSkills */}
+          {activeComponent === 'manage-skills' && <ManageSkills />}
           {activeComponent === 'certification' && <CertificationApproval />}
           {activeComponent === 'leaderboard' && <Leaderboard />}
           {activeComponent === 'course-management' && <CourseManagement />}

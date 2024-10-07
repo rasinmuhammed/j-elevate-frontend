@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Alert, Form, Button, Table } from 'react-bootstrap';
+import { Container, Alert, Form, Button, Row, Col, Table } from 'react-bootstrap';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import './CertificationsPage.css';
 
 const CertificationsPage = () => {
   const [certifications, setCertifications] = useState([]);
@@ -11,6 +12,10 @@ const CertificationsPage = () => {
   const [selectedCourse, setSelectedCourse] = useState('');
   const [section, setSection] = useState('Course');
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [filterVerified, setFilterVerified] = useState(false);
 
   useEffect(() => {
     fetchCertifications();
@@ -30,7 +35,6 @@ const CertificationsPage = () => {
 
   const handleUploadCertificate = async (e) => {
     e.preventDefault();
-
     if (!certificateImage || !certificationLink || !selectedCourse) {
       setErrorMessage('Please fill all fields.');
       return;
@@ -50,10 +54,9 @@ const CertificationsPage = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-
       alert('Certification uploaded successfully!');
       resetForm();
-      fetchCertifications();  // Refresh certifications after upload
+      fetchCertifications();
     } catch (error) {
       console.error('Error uploading certification:', error);
       setErrorMessage('Failed to upload certification.');
@@ -70,69 +73,135 @@ const CertificationsPage = () => {
     setErrorMessage('');
   };
 
+  // Filter and sort certifications
+  const filteredCertifications = certifications
+    .filter(cert => (
+      cert.courseId.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cert.certificationLink.toLowerCase().includes(searchQuery.toLowerCase())
+    ))
+    .filter(cert => !filterVerified || cert.isVerified)
+    .sort((a, b) => {
+      let comparison = 0;
+      if (sortBy === 'course') {
+        comparison = a.courseId.course.localeCompare(b.courseId.course);
+      } else if (sortBy === 'completionDate') {
+        comparison = new Date(a.completionDate) - new Date(b.completionDate);
+      } else if (sortBy === 'approved') {
+        comparison = a.isVerified === b.isVerified ? 0 : a.isVerified ? -1 : 1;
+      } else {
+        comparison = new Date(b.createdAt) - new Date(a.createdAt);
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
+  const handleSort = (field) => {
+    const newOrder = sortBy === field && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortBy(field);
+    setSortOrder(newOrder);
+  };
+
   return (
     <Container className="mt-4">
       <h4>Your Certifications</h4>
       {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
 
       <Form onSubmit={handleUploadCertificate} className="mb-4">
-        <Form.Group controlId="courseSelect">
-          <Form.Label>Select Course</Form.Label>
-          <Form.Control as="select" value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)} required>
-            <option value="">Select a course</option>
-            {certifications.map(cert => (
-              <option key={cert.courseId._id} value={cert.courseId._id}>{cert.courseId.course}</option>
-            ))}
-          </Form.Control>
-        </Form.Group>
-
-        <Form.Group controlId="sectionSelect">
-          <Form.Label>Select Section</Form.Label>
-          <Form.Control as="select" value={section} onChange={(e) => setSection(e.target.value)} required>
-            <option value="Course">Course</option>
-            <option value="Professional Certificate">Professional Certificate</option>
-            <option value="Guided Project">Guided Project</option>
-            <option value="Specialization">Specialization</option>
-          </Form.Control>
-        </Form.Group>
-
-        <Form.Group controlId="certificateImage">
-          <Form.Label>Upload Certificate Image</Form.Label>
-          <Form.Control type="file" onChange={(e) => setCertificateImage(e.target.files[0])} required />
-        </Form.Group>
-
-        <Form.Group controlId="certificationLink">
-          <Form.Label>Certification Link</Form.Label>
-          <Form.Control type="url" value={certificationLink} onChange={(e) => setCertificationLink(e.target.value)} required />
-        </Form.Group>
-
-        <Button variant="primary" type="submit" disabled={loading}>
-          Upload Certification
-        </Button>
-        {loading && <p>Uploading...</p>}
+        <Row>
+          <Col md={4}>
+            <Form.Group controlId="formCertificateImage">
+              <Form.Label>Certificate Image</Form.Label>
+              <Form.Control
+                type="file"
+                onChange={(e) => setCertificateImage(e.target.files[0])}
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group controlId="formCertificationLink">
+              <Form.Label>Certification Link</Form.Label>
+              <Form.Control
+                type="text"
+                value={certificationLink}
+                onChange={(e) => setCertificationLink(e.target.value)}
+                required
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row className="mt-2">
+          <Col md={4}>
+            <Form.Group controlId="formSection">
+              <Form.Label>Section</Form.Label>
+              <Form.Control
+                type="text"
+                value={section}
+                onChange={(e) => setSection(e.target.value)}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Button variant="primary" type="submit" disabled={loading}>
+              {loading ? 'Uploading...' : 'Upload Certification'}
+            </Button>
+          </Col>
+        </Row>
       </Form>
 
+      <Row className="mb-4">
+        <Col md={6}>
+          <Form.Control
+            type="text"
+            placeholder="Search certifications..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </Col>
+        <Col md={3}>
+          <Form.Check
+            type="checkbox"
+            label="Show Verified Only"
+            checked={filterVerified}
+            onChange={(e) => setFilterVerified(e.target.checked)}
+          />
+        </Col>
+      </Row>
+
       <h5 className="mt-4">Uploaded Certifications</h5>
-      {certifications.length > 0 ? (
+      {filteredCertifications.length > 0 ? (
         <Table striped bordered hover>
           <thead>
             <tr>
-              <th>Course</th>
-              <th>Section</th>
-              <th>Certification Link</th>
-              <th>Certificate Image</th>
+              <th onClick={() => handleSort('course')} style={{ cursor: 'pointer' }}>
+                Course {sortBy === 'course' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th onClick={() => handleSort('certificateType')} style={{ cursor: 'pointer' }}>
+                Certificate Type {sortBy === 'certificateType' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th onClick={() => handleSort('section')} style={{ cursor: 'pointer' }}>
+                Section {sortBy === 'section' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th onClick={() => handleSort('completionDate')} style={{ cursor: 'pointer' }}>
+                Completion Date {sortBy === 'completionDate' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th onClick={() => handleSort('approved')} style={{ cursor: 'pointer' }}>
+                Approved {sortBy === 'approved' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {certifications.map(cert => (
+            {filteredCertifications.map(cert => (
               <tr key={cert._id}>
                 <td>{cert.courseId.course}</td>
+                <td>{cert.courseId.certificateType}</td> {/* Displaying the certificate type */}
                 <td>{cert.section}</td>
+                <td>{new Date(cert.completionDate).toLocaleDateString()}</td>
+                <td>{cert.isApproved ? 'Yes' : 'No'}</td>
                 <td>
-                  <a href={cert.certificationLink} target="_blank" rel="noopener noreferrer">View Certification</a>
-                </td>
-                <td>
-                  <img src={cert.certificateImage} alt="Certificate" style={{ maxWidth: '100px', height: 'auto' }} />
+                  <a href={cert.certificationLink} target="_blank" rel="noopener noreferrer">
+                    <i className="fa-solid fa-eye"></i> View
+                  </a>
                 </td>
               </tr>
             ))}

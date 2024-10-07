@@ -1,24 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Card, ListGroup } from 'react-bootstrap';
+import { Card, ListGroup, Badge, Row, Col, Modal, Button } from 'react-bootstrap';
+import './SkillsDisplay.css'; // Import a CSS file for additional styling
+
 
 const SkillsDisplay = () => {
   const [skills, setSkills] = useState([]);
-  const [userSkills, setUserSkills] = useState([]); // State to store user's skills
+  const [userSkills, setUserSkills] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [currentDescription, setCurrentDescription] = useState('');
 
   useEffect(() => {
     fetchSkills();
-    fetchUserSkills(); // Fetch user skills when component mounts
+    fetchUserSkills();
   }, []);
 
   const fetchSkills = async () => {
     try {
-      const token = Cookies.get('token'); // Retrieve the token correctly.
+      const token = Cookies.get('token');
       const response = await axios.get('http://localhost:3000/api/user/skillsdep', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setSkills(response.data); // Assuming response.data is an array of skill objects
+      setSkills(response.data);
     } catch (error) {
       console.error('Error fetching skills:', error);
     }
@@ -26,12 +30,11 @@ const SkillsDisplay = () => {
 
   const fetchUserSkills = async () => {
     try {
-      const token = Cookies.get('token'); // Retrieve the token correctly.
+      const token = Cookies.get('token');
       const response = await axios.get('http://localhost:3000/api/user/skills', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUserSkills(response.data); 
-      console.log(response.data);
+      setUserSkills(response.data);
     } catch (error) {
       console.error('Error fetching user skills:', error);
     }
@@ -39,58 +42,91 @@ const SkillsDisplay = () => {
 
   // Group skills by department
   const groupedSkills = skills.reduce((acc, skill) => {
-    const departmentId = skill.department; // Assuming the department is included in the skill object
-    if (!acc[departmentId]) {
-      acc[departmentId] = { skills: [], userSkills: [] }; // Initialize department group
+    const departmentName = skill.departmentName; // Use departmentName instead of department ID
+    if (!acc[departmentName]) {
+      acc[departmentName] = { skills: [] };
     }
-    acc[departmentId].skills.push(skill);
+    acc[departmentName].skills.push(skill);
     return acc;
   }, {});
 
-  // Group user's skills by department
-  userSkills.forEach(userSkill => {
-    const departmentId = userSkill.department; // Assuming userSkill has a department
-    if (groupedSkills[departmentId]) {
-      groupedSkills[departmentId].userSkills.push(userSkill);
-    } else {
-      groupedSkills[departmentId] = { skills: [], userSkills: [userSkill] }; // Initialize if not present
-    }
-  });
+  // Assuming there's only one department for the user
+  const departmentName = Object.keys(groupedSkills)[0]; // Get the department name
+
+  const handleShowModal = (description) => {
+    setCurrentDescription(description);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setCurrentDescription(''); // Reset description when closing
+  };
 
   return (
-    <Card>
-      <Card.Header as="h5">Expected Skills for Your Department</Card.Header>
+    <Card className="mb-4">
+      <Card.Header as="h5">Key Skills for Your Department</Card.Header>
       <ListGroup variant="flush">
-        {Object.keys(groupedSkills).map((departmentId) => (
-          <div key={departmentId}>
-            <h6>{departmentId}</h6> {/* Replace with the actual department name if available */}
-            {groupedSkills[departmentId].skills.length > 0 ? (
-              groupedSkills[departmentId].skills.map((skill) => (
-                <ListGroup.Item key={skill._id}>
-                  <strong>{skill.name}</strong> {/* Display the skill name */}
-                  {/* Optionally display other properties if needed */}
-                </ListGroup.Item>
-              ))
-            ) : (
-              <ListGroup.Item>No expected skills available for this department.</ListGroup.Item>
-            )}
-            <h6>User Skills:</h6>
-            <ListGroup>
-              {userSkills.length > 0 ? (
-                userSkills.map((userSkill, index) => (
-                  <ListGroup.Item key={index}> {/* Using index as key for simple strings */}
-                    {userSkill} {/* Display the user skill */}
-                  </ListGroup.Item>
-                ))
-              ) : (
-                <ListGroup.Item>No user skills available.</ListGroup.Item>
-              )}
-            </ListGroup>
-            
-            
+        {departmentName && (
+          <div className="department-section">
+            <Card.Body>
+              <Card.Title className="department-title">{departmentName}</Card.Title> {/* Display department name */}
+              <Row>
+                <Col md={6}>
+                  <h6>Expected Skills:</h6>
+                  {groupedSkills[departmentName].skills.length > 0 ? (
+                    <ListGroup>
+                      {groupedSkills[departmentName].skills.map((skill) => (
+                        <ListGroup.Item key={skill._id} className="skill-item d-flex justify-content-between align-items-center">
+                          <div>
+                            <strong>{skill.name}</strong>
+                            <Badge pill bg="secondary" className="ml-2">
+                              {skill.level} {/* Optional: display level if available */}
+                            </Badge>
+                          </div>
+                          <button className="btn btn-link" onClick={() => handleShowModal(skill.description)}>
+                          <i class="fa-solid fa-eye"></i>
+                          </button>
+                        </ListGroup.Item>
+                      ))}
+                    </ListGroup>
+                  ) : (
+                    <ListGroup.Item>No expected skills available for this department.</ListGroup.Item>
+                  )}
+                </Col>
+                <Col md={6}>
+                  <h6>User Skills:</h6>
+                  {userSkills.length > 0 ? (
+                    <ListGroup>
+                      {userSkills.map((userSkill, index) => (
+                        <ListGroup.Item key={index} className="user-skill-item">
+                          {userSkill} {/* Assuming userSkill has a name property */}
+                          
+                        </ListGroup.Item>
+                      ))}
+                    </ListGroup>
+                  ) : (
+                    <ListGroup.Item>No user skills available.</ListGroup.Item>
+                  )}
+                </Col>
+              </Row>
+            </Card.Body>
           </div>
-        ))}
+        )}
       </ListGroup>
+
+      {/* Modal for skill description */}
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Skill Description</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{currentDescription}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Card>
   );
 };

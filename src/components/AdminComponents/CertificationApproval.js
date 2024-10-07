@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -7,7 +6,6 @@ const CertificationApproval = () => {
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
-    // Fetch pending requests
     const fetchRequests = async () => {
       try {
         const res = await axios.get('http://localhost:3000/api/admin/pending-requests', {
@@ -29,41 +27,48 @@ const CertificationApproval = () => {
         { requestId, approve },
         { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
       );
-      // Remove approved/rejected request from UI
-      setRequests((prevRequests) =>
-        prevRequests.filter(req => req._id !== requestId)
-      );
+      setRequests(prevRequests => prevRequests.filter(req => req._id !== requestId));
     } catch (error) {
-      console.error('Error approving request:', error);
+      console.error('Error approving/rejecting request:', error);
     }
   };
 
   return (
-    <div>
-      <h3>Pending Certification Approvals</h3>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Employee</TableCell>
-            <TableCell>Certification</TableCell>
-            <TableCell>Score</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {requests.map(req => (
-            <TableRow key={req._id}>
-              <TableCell>{req.employee.name}</TableCell>
-              <TableCell>{req.certificationName}</TableCell>
-              <TableCell>{req.score}</TableCell>
-              <TableCell>
-                <Button onClick={() => handleApproval(req._id, true)}>Approve</Button>
-                <Button onClick={() => handleApproval(req._id, false)}>Reject</Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="container mt-4">
+      <h3 className="mb-4">Pending Certification Approvals</h3>
+      {requests.length > 0 ? (
+        <table className="table table-striped">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Certification</th>
+              <th>Score</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {requests.map(req => (
+              <tr key={req._id}>
+                <td>{req.employee.name}</td>
+                <td>{req.certificationName}</td>
+                <td>{req.score}</td>
+                <td>
+                  <button className="btn btn-success me-2" onClick={() => handleApproval(req._id, true)}>Approve</button>
+                  <button className="btn btn-danger" onClick={() => handleApproval(req._id, false)}>Reject</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div className="text-center mt-5">
+          <i className="fas fa-comments fa-3x mb-3" style={{ color: '#6c757d' }}></i>
+          <p className="lead">No pending requests at the moment.</p>
+          <p className="text-muted">"Great things in business are never done by one person; they’re done by a team of people."</p>
+          <p className="text-muted">"Success usually comes to those who are too busy to be looking for it."</p>
+          <p className="text-muted">"Opportunities don't happen. You create them."</p>
+        </div>
+      )}
     </div>
   );
 };

@@ -89,11 +89,12 @@ body {
   background-color: white; /* Main background color */
 }
 
-.admin-dashboard .sidebar {
+.sidebar {
   width: 250px;
   transition: width 0.3s;
   background-color: #25195f; /* Sidebar background color */
   padding: 20px;
+  position: fixed;
 }
 
 .admin-dashboard .sidebar.collapsed {
@@ -146,4 +147,222 @@ body {
   margin-bottom: 20px; /* Space below the table */
 }
 
-/* Add additional component-specific styles here... */
+
+/* Page layout and general styling */
+.add-course-page {
+  height: 70vh; /* Occupy 70% of the viewport height */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #f8f9fa; /* Light grey background */
+}
+
+h4 {
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Filter controls styling */
+.filter-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.filter-controls .form-control {
+  max-width: 200px;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Course list styling */
+.course-list {
+  flex-grow: 1;
+  overflow-x: auto; /* Horizontal scrolling */
+  padding-bottom: 20px;
+}
+
+.course-row {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.course-col {
+  flex: 0 0 250px; /* Fixed width for each card to ensure horizontal scroll */
+  margin-right: 20px;
+}
+
+.course-card {
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow */
+  transition: transform 0.3s ease;
+  height: 100%; /* Ensure consistent card height */
+  display: flex;
+  flex-direction: column; /* Ensure elements stack vertically */
+}
+
+/* Keep existing styles, but ensure button is at the bottom */
+.add-button {
+  margin-top: auto; /* Push button to the bottom */
+}
+.course-card:hover {
+  transform: translateY(-5px); /* Slight elevation on hover */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); /* Enhance shadow on hover */
+}
+
+.course-card .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.course-card .card-subtitle {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 10px;
+}
+
+.course-card .card-text {
+  margin-bottom: 15px;
+}
+
+.course-card .btn-primary {
+  background-color: #007bff;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 20px;
+}
+
+.course-card .btn-primary:hover {
+  background-color: #0056b3;
+}
+
+/* Skill badges styling */
+.skill-badges {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.skill-badge {
+  background-color: #e0e0e0;
+  color: #555;
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+}
+
+.skill-badge:disabled {
+  background-color: #d3d3d3;
+  color: #999;
+  border: none;
+  cursor: default;
+}
+
+/* See More/Less button */
+.see-more-btn {
+  font-size: 0.9rem;
+  color: #007bff;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 5px;
+  text-decoration: underline;
+}
+
+.see-more-btn:hover {
+  color: #0056b3;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .filter-controls {
+    flex-direction: column;
+  }
+
+  .filter-controls .form-control {
+    max-width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .course-col {
+    flex: 0 0 100%; /* Stack cards vertically on smaller screens */
+  }
+}
+
+.dashboard-container {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.card-text {
+  color: #555;
+}
+
+/* Global Styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f9fa; /* Light background for contrast */
+}
+
+/* Learning Bucket Styles */
+.learning-bucket-container {
+  max-width: 1200px; /* Set a max width for the container */
+  margin: auto; /* Center the container */
+  padding: 20px;
+}
+
+.learning-course-card {
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow for card */
+  transition: transform 0.3s ease;
+  background: #ffffff; /* White background for the card */
+}
+
+.learning-course-card:hover {
+  transform: scale(1.02); /* Scale effect on hover */
+}
+
+h4 {
+  text-align: center;
+  margin-bottom: 20px; /* Space below the title */
+  color: #333; /* Darker text color */
+}
+
+.alert {
+  margin-bottom: 20px; /* Space below alerts */
+}
+
+button {
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3; /* Darker blue on hover for buttons */
+}
+
+/* Progress Bar Styles */
+.progress {
+  height: 20px; /* Increase height of progress bar */
+}
+
+.progress-bar {
+  background-color: #007bff; /* Bootstrap primary color */
+}
+
+/* Modal Styles */
+.modal-header {
+  background-color: #f1f1f1; /* Light background for header */
+}
+
+.modal-title {
+  color: #333; /* Dark title color */
+}
