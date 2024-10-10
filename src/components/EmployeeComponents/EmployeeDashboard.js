@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Navbar, Nav, Button, Card, Image } from 'react-bootstrap';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -20,11 +20,18 @@ const EmployeeDashboard = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [availableCourses, setAvailableCourses] = useState([]);
   const [user, setUser] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
 
   useEffect(() => {
     fetchAvailableCourses();
     fetchUserProfile();
   }, []);
+
+  useEffect(() => {
+    if (user && user.employeeID) {
+      fetchRecommendations();
+    }
+  }, [user]);
 
   const fetchAvailableCourses = async () => {
     try {
@@ -79,6 +86,17 @@ const EmployeeDashboard = () => {
     setCurrentPage(page);
   };
 
+  const fetchRecommendations = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/user/recommendations/${user.employeeID}`, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+      });
+      setRecommendations(response.data); // Directly set recommendations
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+    }
+  };
+
   // Sample data for graph; this should be replaced with actual data from your backend
   const graphData = {
     labels: ['January', 'February', 'March', 'April', 'May'],
@@ -95,7 +113,8 @@ const EmployeeDashboard = () => {
 
   return (
     <div style={{ display: 'flex', height: '100vh', backgroundColor: 'white' }}>
-      <div style={{
+      <div
+        style={{
           width: sidebarExpanded ? '250px' : '60px',
           transition: 'width 0.3s',
           background: 'linear-gradient(180deg, #350ca3, #6d259f, #f05e95)',
@@ -152,10 +171,10 @@ const EmployeeDashboard = () => {
         <Container className="dashboard-container mt-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', padding: '20px' }}>
           {user && (
             <Card className="mb-4" style={{ display: 'flex', flexDirection: 'row', padding: '15px', border: '1px solid #ddd', borderRadius: '10px', alignItems: 'center' }}>
-              <Image 
-                src={`https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}`} 
-                roundedCircle 
-                style={{ width: '60px', height: '60px', marginRight: '15px' }} 
+              <Image
+                src={`https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}`}
+                roundedCircle
+                style={{ width: '60px', height: '60px', marginRight: '15px' }}
                 alt="User Thumbnail"
               />
               <div>
@@ -178,12 +197,27 @@ const EmployeeDashboard = () => {
               <p>Your gamification level: {user ? getLevel(user.points) : 'N/A'}</p>
               {/* Display progress bar for points */}
               <ProgressBar now={user ? user.points : 0} max={200} label={`${user ? user.points : 0} Points`} />
-              
               {/* Graph displaying courses completed */}
               <h4>Courses Completed Over Time</h4>
               <Line data={graphData} options={{ responsive: true }} />
+              {/* Recommendations Section */}
+              <h4>Recommended Courses:</h4>
+              {recommendations.length > 0 ? (
+                <ul>
+                  {recommendations.map((course, index) => (
+                    <li key={index}>
+                      <b>{course.course}</b> - {course.expected_skills}
+                      <br />
+                      Rating: {course.rating} | Level: {course.level}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No recommendations available at the moment.</p>
+              )}
             </div>
           )}
+
           {currentPage === 'addCourse' && (
             <AddCoursePage availableCourses={availableCourses} addToLearningBucket={addToLearningBucket} />
           )}

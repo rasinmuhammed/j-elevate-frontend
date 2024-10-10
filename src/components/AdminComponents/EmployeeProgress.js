@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form } from 'react-bootstrap';
+import { Table, Button, Modal, Badge, Form } from 'react-bootstrap';
 import axios from 'axios';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import GamificationProgress from './GamificationProgress'; // Import the Gamification Progress component
 import '../style.css'; // Import the CSS file for styles
 
@@ -13,6 +12,7 @@ const EmployeeProgress = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: 'points', direction: 'descending' });
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -44,8 +44,25 @@ const EmployeeProgress = () => {
       const isDepartmentMatch = selectedDepartment ? employee.department?.name === selectedDepartment : true;
       return isNameMatch && isDepartmentMatch;
     });
+
+    if (sortConfig.key) {
+      filtered.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'ascending' ? 1 : -1;
+        return 0;
+      });
+    }
+
     setFilteredEmployees(filtered);
-  }, [searchTerm, selectedDepartment, employees]);
+  }, [searchTerm, selectedDepartment, employees, sortConfig]);
+
+  const handleSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
 
   const handleViewDetails = async (employeeId) => {
     try {
@@ -54,7 +71,7 @@ const EmployeeProgress = () => {
       setShowModal(true);
     } catch (error) {
       console.error('Error fetching employee details:', error);
-      alert('Error fetching employee details'); // Display error to the user
+      alert('Error fetching employee details');
     }
   };
 
@@ -63,20 +80,35 @@ const EmployeeProgress = () => {
     setSelectedEmployee(null);
   };
 
-  return (
-    <div>
-      <h3>Employee List</h3>
+  const renderCertificationBadge = (type) => {
+    switch (type) {
+      case 'Course':
+        return <Badge bg="primary">Course</Badge>;
+      case 'Professional Certificate':
+        return <Badge bg="success">Professional Certificate</Badge>;
+      case 'Specialization':
+        return <Badge bg="warning">Specialization</Badge>;
+      default:
+        return null;
+    }
+  };
 
-      <Form.Group controlId="search">
+  return (
+    <div className="employee-progress-container">
+      <h3 className="text-center my-4">Employee Progress Dashboard</h3>
+
+      {/* Search and Filter */}
+      <Form.Group controlId="search" className="mb-3">
         <Form.Control
           type="text"
           placeholder="Search by name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
         />
       </Form.Group>
 
-      <Form.Group controlId="departmentFilter">
+      <Form.Group controlId="departmentFilter" className="mb-3">
         <Form.Control
           as="select"
           value={selectedDepartment}
@@ -89,14 +121,17 @@ const EmployeeProgress = () => {
         </Form.Control>
       </Form.Group>
 
+      {/* Sortable Table */}
       <div className="table-scroll">
-        <Table striped bordered hover>
+        <Table striped bordered hover responsive className="table-sortable">
           <thead>
             <tr>
               <th>Employee Name</th>
               <th>Department</th>
               <th>Designation</th>
-              <th>Points</th>
+              <th onClick={() => handleSort('points')} style={{ cursor: 'pointer' }}>
+                Points {sortConfig.key === 'points' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -118,39 +153,66 @@ const EmployeeProgress = () => {
         </Table>
       </div>
 
-      {/* Modal for Employee Details */}
+      {/* Employee Details Modal */}
       <Modal show={showModal} onHide={closeModal} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>{selectedEmployee ? `${selectedEmployee.firstName} ${selectedEmployee.lastName} - Details` : 'Employee Details'}</Modal.Title>
+          <Modal.Title>{selectedEmployee ? `${selectedEmployee.firstName} ${selectedEmployee.lastName}` : 'Employee Details'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedEmployee ? (
-            <div>
-              <h5>Employee ID: {selectedEmployee._id}</h5>
-              <h6>Email: {selectedEmployee.email}</h6>
-              <h6>Designation: {selectedEmployee.designation}</h6>
-              <h6>Role: {selectedEmployee.role}</h6>
-              <h6>Skills: {selectedEmployee.skills?.length ? selectedEmployee.skills.join(', ') : 'No skills available'}</h6>
-              <h6>Certifications: {selectedEmployee.certifications?.length ? selectedEmployee.certifications.join(', ') : 'No certifications available'}</h6>
-              <h6>Specializations: {selectedEmployee.specializations?.length ? selectedEmployee.specializations.join(', ') : 'No specializations available'}</h6>
-              <h6>Points: {selectedEmployee.points}</h6>
+            <div className="employee-details">
+              <p><strong>Employee ID:</strong> {selectedEmployee.employeeID}</p>
+              <p><strong>Email:</strong> {selectedEmployee.email}</p>
+              <p><strong>Designation:</strong> {selectedEmployee.designation}</p>
+              <p><strong>Department:</strong> {selectedEmployee.department.name}</p>
+              <p><strong>Skills:</strong> {selectedEmployee.skills?.join(', ') || 'No skills available'}</p>
+              <p><strong>Points:</strong> {selectedEmployee.points}</p>
 
-              <GamificationProgress points={selectedEmployee.points} /> {/* Gamification Progress Component */}
+              {/* Certifications */}
+              <h5>Certifications</h5>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Course Name</th>
+                    <th>Certificate Type</th>
+                    <th>Completion Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedEmployee.courses?.filter(course => ['Course', 'Professional Certificate'].includes(course.type)).map((course, index) => (
+                    <tr key={index}>
+                      <td>{course.courseId?.course || 'Unknown Course'}</td>
+                      <td>{course.courseId?.certificateType}</td>
+                      <td>{course.completionDate ? new Date(course.completionDate).toLocaleDateString() : 'Not completed'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
 
-              <h6>Progress History</h6>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={selectedEmployee.progressHistory}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="progress" stroke="#8884d8" activeDot={{ r: 8 }} />
-                </LineChart>
-              </ResponsiveContainer>
+              {/* Specializations */}
+              <h5>Specializations</h5>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Specialization</th>
+                    <th>Completion Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedEmployee.courses?.filter(course => course.courseId?.certificateType === ' Specialization ').map((course, index) => (
+                    <tr key={index}>
+                      <td>{course.courseId?.course || 'Unknown Specialization'}</td>
+                      <td>{course.completionDate ? new Date(course.completionDate).toLocaleDateString() : 'Not completed'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+
+              {/* Gamification Progress */}
+              <GamificationProgress points={selectedEmployee.points} />
             </div>
           ) : (
-            <h6>Loading employee details...</h6> // Loading state
+            <p>Loading employee details...</p>
           )}
         </Modal.Body>
         <Modal.Footer>

@@ -16,6 +16,7 @@ const CertificationsPage = () => {
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('asc');
   const [filterVerified, setFilterVerified] = useState(false);
+  
 
   useEffect(() => {
     fetchCertifications();
@@ -108,66 +109,22 @@ const CertificationsPage = () => {
       <Form onSubmit={handleUploadCertificate} className="mb-4">
         <Row>
           <Col md={4}>
-            <Form.Group controlId="formCertificateImage">
-              <Form.Label>Certificate Image</Form.Label>
-              <Form.Control
-                type="file"
-                onChange={(e) => setCertificateImage(e.target.files[0])}
-                required
-              />
-            </Form.Group>
+         
           </Col>
           <Col md={4}>
-            <Form.Group controlId="formCertificationLink">
-              <Form.Label>Certification Link</Form.Label>
-              <Form.Control
-                type="text"
-                value={certificationLink}
-                onChange={(e) => setCertificationLink(e.target.value)}
-                required
-              />
-            </Form.Group>
+     
+             
           </Col>
         </Row>
         <Row className="mt-2">
-          <Col md={4}>
-            <Form.Group controlId="formSection">
-              <Form.Label>Section</Form.Label>
-              <Form.Control
-                type="text"
-                value={section}
-                onChange={(e) => setSection(e.target.value)}
-              />
-            </Form.Group>
-          </Col>
-          <Col md={4}>
-            <Button variant="primary" type="submit" disabled={loading}>
-              {loading ? 'Uploading...' : 'Upload Certification'}
-            </Button>
-          </Col>
+      
+
         </Row>
       </Form>
 
-      <Row className="mb-4">
-        <Col md={6}>
-          <Form.Control
-            type="text"
-            placeholder="Search certifications..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </Col>
-        <Col md={3}>
-          <Form.Check
-            type="checkbox"
-            label="Show Verified Only"
-            checked={filterVerified}
-            onChange={(e) => setFilterVerified(e.target.checked)}
-          />
-        </Col>
-      </Row>
 
-      <h5 className="mt-4">Uploaded Certifications</h5>
+
+   
       {filteredCertifications.length > 0 ? (
         <Table striped bordered hover>
           <thead>
@@ -178,31 +135,27 @@ const CertificationsPage = () => {
               <th onClick={() => handleSort('certificateType')} style={{ cursor: 'pointer' }}>
                 Certificate Type {sortBy === 'certificateType' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}
               </th>
-              <th onClick={() => handleSort('section')} style={{ cursor: 'pointer' }}>
-                Section {sortBy === 'section' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}
-              </th>
+              
               <th onClick={() => handleSort('completionDate')} style={{ cursor: 'pointer' }}>
                 Completion Date {sortBy === 'completionDate' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}
               </th>
               <th onClick={() => handleSort('approved')} style={{ cursor: 'pointer' }}>
                 Approved {sortBy === 'approved' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}
               </th>
-              <th>Actions</th>
+            
             </tr>
           </thead>
           <tbody>
+            
             {filteredCertifications.map(cert => (
+              
               <tr key={cert._id}>
-                <td>{cert.courseId.course}</td>
-                <td>{cert.courseId.certificateType}</td> {/* Displaying the certificate type */}
-                <td>{cert.section}</td>
+                <td>{cert.courseId.course}{console.log(cert)}</td>
+                <td>{cert.courseId.certificateType}</td>
+                
                 <td>{new Date(cert.completionDate).toLocaleDateString()}</td>
                 <td>{cert.isApproved ? 'Yes' : 'No'}</td>
-                <td>
-                  <a href={cert.certificationLink} target="_blank" rel="noopener noreferrer">
-                    <i className="fa-solid fa-eye"></i> View
-                  </a>
-                </td>
+               
               </tr>
             ))}
           </tbody>
